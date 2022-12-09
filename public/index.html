@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <title>Esteganografia</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/steganography.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@200&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.2/cyborg/bootstrap.min.css"
+      integrity="sha512-LO/i4F5fAzg8t9KVCLBHBMrso1D+xALfkt852Fm6YPJGgySO0gCFwJ5aNll7y64evHWeK5C6R+2bKCICHBGp1Q=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      body {
+        font-family: "Heebo", sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <br />
+    <h1 class="text-4xl text-center m-10">Esteganografia</h1>
+    <div class="container align-self-center">
+      <div
+        id="g_id_onload"
+        data-client_id="440734826354-88d61ct7e70n4hfkq10ugsrvtkkgmuct.apps.googleusercontent.com"
+        data-auto_prompt="false"
+        data-auto_select="true"
+        data-callback="handleCredentialResponse"
+      ></div>
+
+      <div
+        data-type="standard"
+        data-size="large"
+        data-theme="outline"
+        data-text="sign_in_with"
+        data-shape="rectangular"
+        data-logo_alignment="left"
+        class="g_id_signin"
+      ></div>
+
+      <button id="g_id_signout" class="btn btn-secondary w-100 p-1">
+        Sign out
+      </button>
+    </div>
+
+    <hr />
+
+    <div class="cont">
+      <div>
+        <div class="ui input">
+          <form>
+            <fieldset>
+              <legend>Formulario de carga</legend>
+              <div class="form-group">
+                <label for="nombre" class="form-label mt-4"
+                  >Nombre del Archivo</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nombre"
+                  aria-describedby="emailHelp"
+                  placeholder="Ingrese el nombre del archivo"
+                />
+                <small id="emailHelp" class="form-text text-muted"
+                  >Se nombrara el archivo con el nombre que ingreses en la
+                  descraga y n la bd</small
+                >
+              </div>
+              <hr />
+
+              <div class="form-group">
+                <label for="fileToUpload" name="pic" class="form-label mt-4"
+                  >Selecciona una imagen</label
+                >
+                <input
+                  class="form-control"
+                  type="file"
+                  id="fileToUpload"
+                  onchange="readURL(this);"
+                  accept="image/*"
+                />
+              </div>
+              <hr />
+              <div class="form-group">
+                <label for="text" class="form-label mt-4"
+                  >Texto a ocultar
+                </label>
+                <textarea id="text" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="key" class="form-label mt-4"
+                  >Texto a ocultar
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="key"
+                  placeholder="Clave de secreta"
+                />
+              </div>
+
+              <button
+                class="btn btn-outline-dark"
+                type="button"
+                onclick="hideText()"
+              >
+                Hide Message Into Image
+              </button>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+      <div class="img-cont">
+        <div class="img1">
+          <h4 class="text-center">Imagen Original</h4>
+          <div class="align-self-center">
+            <img
+              id="image1"
+              class="rounded"
+              src=""
+              alt=""
+              style="height: 120px; width: 120px; margin: 30px"
+            />
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-center">Imagen Oculta</h4>
+          <div class="align-self-center">
+            <img
+              id="image2"
+              class="rounded"
+              src=""
+              alt=""
+              style="height: 120px; width: 120px; margin: 30px"
+            />
+          </div>
+        </div>
+
+        <div class="d-flex p-2">
+          <button class="btn btn-outline-primary" onclick="download()">
+            Download
+          </button>
+        </div>
+      </div>
+      <hr />
+      <div class="img-cont">
+        <div class="form-group">
+          <label for="pic" class="form-label mt-4">Selecciona una imagen</label>
+          <input class="form-control" type="file" id="pic" accept="image/*" />
+        </div>
+        <br />
+        <div class="form-group">
+          <label for="key2" class="form-label mt-4">
+            Llave para decodificar
+          </label>
+          <input
+            type="text"
+            class="form-control"
+            id="key2"
+            placeholder="Clave de secreta"
+          />
+        </div>
+        <br />
+        <button class="btn btn-outline-dark" onclick="decode();">
+          Show Message From Image
+        </button>
+        <br />
+        <hr />
+        <h5>Decoded Text:</h5>
+        <br />
+        <figure class="text-center">
+          <blockquote class="blockquote">
+            <h5 class="mb-0" id="decoded"></h5>
+          </blockquote>
+        </figure>
+        <br />
+      </div>
+    </div>
+
+    <script>
+      function handleCredentialResponse(response) {
+        const body = {
+          id_token: response.credential,
+        };
+
+        fetch("/api/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        })
+          .then((res) => res.json())
+          .then((resp) => {
+            console.log(resp);
+            localStorage.setItem("email", resp.usuario.correo);
+            localStorage.setItem("token", resp.token);
+            console.log("====================================");
+          })
+          .catch(console.warn);
+
+        const button = document.getElementById("g_id_signout");
+        button.onclick = async () => {
+          console.log(google.accounts.id);
+          google.accounts.id.disableAutoSelect();
+          google.accounts.id.revoke(localStorage.getItem("email"), (done) => {
+            console.log("consent revoked");
+            localStorage.clear();
+            location.reload();
+          });
+        };
+      }
+
+      function download() {
+        const a = document.createElement("a");
+        a.href = document.getElementById("image2").src;
+        a.download = document.getElementById("nombre").value;
+        a.click();
+      }
+    </script>
+    <script src="js/index.js"></script>
+  </body>
+</html>
